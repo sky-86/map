@@ -158,8 +158,9 @@ function getLocation() {
       initMap(pos);
     });
   } else {
-    print('error');
+    console.log('error');
   }
+  document.write('Accept location services');
 }
 
 function clickedPlaceFromSearch(map, geocoder) {
