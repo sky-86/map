@@ -19,12 +19,12 @@ function initMap(pos) {
     mapboxgl: mapboxgl, // Set the mapbox-gl instance
     marker: false, // Do not use the default marker style
     bbox: [pos.lng - 0.1, pos.lat - 0.1, pos.lng + 0.1, pos.lat + 0.1],
-    proximity: {
-      longitude: pos.lng,
-      latitude: pos.lat,
-    },
+    //proximity: {
+    //  longitude: pos.lng,
+    //  latitude: pos.lat,
+    //},
   });
-  map.addControl(geocoder);
+  map.addControl(geocoder, 'top-left');
 
   // Add zoom and rotation controls to the map.
   map.addControl(new mapboxgl.NavigationControl());
@@ -43,8 +43,8 @@ function initMap(pos) {
   map.addControl(draw);
 
   map.on('draw.create', updateArea);
-  map.on('draw.delete', updateArea);
   map.on('draw.update', updateArea);
+  map.on('draw.delete', deleteArea);
 
   function updateArea(e) {
     const data = draw.getAll();
@@ -53,14 +53,100 @@ function initMap(pos) {
       var bbox = turf.bbox(data);
       var center = turf.center(data);
       console.log(bbox);
-
-      geocoder.bbox = bbox;
-      geocoder.proximity = center;
+      geocoder.setBbox(bbox);
+      geocoder.clear();
     }
   }
 
+  function deleteArea(e) {
+    let bbox = [pos.lng - 0.1, pos.lat - 0.1, pos.lng + 0.1, pos.lat + 0.1];
+    geocoder.clear();
+    geocoder.setBbox(bbox);
+  }
+
+  class MapboxGLButtonControl {
+    constructor({ className = '', title = '', eventHandler = evtHndlr }) {
+      this._className = className;
+      this._title = title;
+      this._eventHandler = eventHandler;
+    }
+
+    onAdd(map) {
+      this._btn = document.createElement('button');
+      this._btn.className = '' + ' ' + this._className;
+      this._btn.style = 'line-width: 0; line-height: 0; width: 50px';
+      this._btn.type = 'button';
+      this._btn.title = this._title;
+      this._btn.textContent = this._title;
+      this._btn.onclick = this._eventHandler;
+
+      this._container = document.createElement('div');
+      this._container.className = 'mapboxgl-ctrl-group mapboxgl-ctrl';
+      this._container.appendChild(this._btn);
+
+      return this._container;
+    }
+
+    onRemove() {
+      this._container.parentNode.removeChild(this._container);
+      this._map = undefined;
+    }
+  }
+
+  /* Event Handlers */
+  function one(event) {
+    geocoder.setInput(event.target.title);
+  }
+
+  const hotspot1 = new MapboxGLButtonControl({
+    className: 'mapboxgl-ctrl-icon mapboxgl-ctrl-pitchtoggle-3d',
+    title: 'Sushi',
+    eventHandler: one,
+  });
+  const hotspot2 = new MapboxGLButtonControl({
+    className: 'mapboxgl-ctrl-icon mapboxgl-ctrl-pitchtoggle-3d',
+    title: 'Coffee',
+    eventHandler: one,
+  });
+  const hotspot3 = new MapboxGLButtonControl({
+    className: 'mapboxgl-ctrl-icon mapboxgl-ctrl-pitchtoggle-3d',
+    title: 'Shop',
+    eventHandler: one,
+  });
+  const hotspot4 = new MapboxGLButtonControl({
+    className: '',
+    title: 'School',
+    eventHandler: one,
+  });
+
+  map.addControl(hotspot1, 'top-left');
+  map.addControl(hotspot2, 'top-left');
+  map.addControl(hotspot3, 'top-left');
+  map.addControl(hotspot4, 'top-left');
+
   // places marker on the place the user clicks from search
   clickedPlaceFromSearch(map, geocoder);
+
+  const dir = new MapboxDirections({
+    accessToken: mapboxgl.accessToken,
+    geocoder: geocoder,
+  });
+
+  function two(event) {
+    if (map.hasControl(dir)) {
+      map.removeControl(dir);
+    } else {
+      map.addControl(dir, 'bottom-right');
+      dir.setOrigin([pos.lng, pos.lat]);
+    }
+  }
+
+  const toggleDirections = new MapboxGLButtonControl({
+    className: '',
+    title: 'Travel',
+    eventHandler: two,
+  });
+  map.addControl(toggleDirections, 'top-right');
 }
 
 function getLocation() {
