@@ -1,4 +1,5 @@
 function initMap(pos) {
+
   //api token
   mapboxgl.accessToken =
     'pk.eyJ1Ijoic2t5LTg2IiwiYSI6ImNsMmo3bnI5dzAyNjUzZHF5NWtqMGx6ZzAifQ.z41BKpPtsJ98GlLb7XjLqQ';
