@@ -3,7 +3,6 @@ function initMap(pos) {
   mapboxgl.accessToken =
     'pk.eyJ1Ijoic2t5LTg2IiwiYSI6ImNsMmo3bnI5dzAyNjUzZHF5NWtqMGx6ZzAifQ.z41BKpPtsJ98GlLb7XjLqQ';
 
-  console.log(pos);
   // create map object
   const map = new mapboxgl.Map({
     container: 'map', // container ID
@@ -12,6 +11,9 @@ function initMap(pos) {
     zoom: 13, // starting zoom
   });
 
+  // navigation controls
+  map.addControl(new mapboxgl.NavigationControl());
+
   // add search bar
   const geocoder = new MapboxGeocoder({
     // Initialize the geocoder
@@ -19,15 +21,11 @@ function initMap(pos) {
     mapboxgl: mapboxgl, // Set the mapbox-gl instance
     marker: false, // Do not use the default marker style
     bbox: [pos.lng - 0.1, pos.lat - 0.1, pos.lng + 0.1, pos.lat + 0.1],
-    //proximity: {
-    //  longitude: pos.lng,
-    //  latitude: pos.lat,
-    //},
+    style: 'mapbox://styles/mapbox/streets-v11',
   });
   map.addControl(geocoder, 'top-left');
 
   // Add zoom and rotation controls to the map.
-  map.addControl(new mapboxgl.NavigationControl());
 
   const draw = new MapboxDraw({
     displayControlsDefault: false,
@@ -94,29 +92,29 @@ function initMap(pos) {
   }
 
   /* Event Handlers */
-  function one(event) {
+  function setGeocoderInput(event) {
     geocoder.setInput(event.target.title);
   }
 
   const hotspot1 = new MapboxGLButtonControl({
     className: 'mapboxgl-ctrl-icon mapboxgl-ctrl-pitchtoggle-3d',
     title: 'Sushi',
-    eventHandler: one,
+    eventHandler: setGeocoderInput,
   });
   const hotspot2 = new MapboxGLButtonControl({
     className: 'mapboxgl-ctrl-icon mapboxgl-ctrl-pitchtoggle-3d',
     title: 'Coffee',
-    eventHandler: one,
+    eventHandler: setGeocoderInput,
   });
   const hotspot3 = new MapboxGLButtonControl({
     className: 'mapboxgl-ctrl-icon mapboxgl-ctrl-pitchtoggle-3d',
     title: 'Shop',
-    eventHandler: one,
+    eventHandler: setGeocoderInput,
   });
   const hotspot4 = new MapboxGLButtonControl({
     className: '',
     title: 'School',
-    eventHandler: one,
+    eventHandler: setGeocoderInput,
   });
 
   map.addControl(hotspot1, 'top-left');
@@ -132,7 +130,7 @@ function initMap(pos) {
     geocoder: geocoder,
   });
 
-  function two(event) {
+  function showDirections(event) {
     if (map.hasControl(dir)) {
       map.removeControl(dir);
     } else {
@@ -144,7 +142,7 @@ function initMap(pos) {
   const toggleDirections = new MapboxGLButtonControl({
     className: '',
     title: 'Travel',
-    eventHandler: two,
+    eventHandler: showDirections,
   });
   map.addControl(toggleDirections, 'top-right');
 }
